@@ -10,8 +10,11 @@ public class PieceRenderer : MonoBehaviour
     private Sprite sprite;
 
     private GameObject itemName;
+    private TextMeshPro meshItemName;
     private GameObject itemQuantity;
+    private TextMeshPro meshItemQuantity;
     private GameObject itemSprite;
+    private SpriteRenderer itemSpriteRenderer;
 
 
     void Start()
@@ -27,28 +30,52 @@ public class PieceRenderer : MonoBehaviour
             RenderPiece();
 
         }
-        itemSprite = RenderItemSprite();
-        itemName = CreateText("Item Name", ItemPiece.NameColor, ItemPiece.PieceItem.Name, TextAlignmentOptions.Top, ItemPiece.NameSize, ItemPiece.NameWidth, ItemPiece.NameHeight);
-        itemQuantity = CreateText("Item Quantity", ItemPiece.QuantityColor, ItemPiece.Quantity.ToString(), TextAlignmentOptions.Top, ItemPiece.QuantitySize, ItemPiece.QuantityWidth, ItemPiece.QuantityHeight);
+        RenderItemSprite(ref itemSprite, ref itemSpriteRenderer);
+        CreateText(ref itemName, ref meshItemName, "Item Name", ItemPiece.NameColor, ItemPiece.PieceItem.Name, TextAlignmentOptions.Top, ItemPiece.NameSize, ItemPiece.NameWidth, ItemPiece.NameHeight, false);
+        CreateText(ref itemQuantity, ref meshItemQuantity, "Item Quantity", ItemPiece.QuantityColor, ItemPiece.Quantity.ToString(), TextAlignmentOptions.Top, ItemPiece.QuantitySize, ItemPiece.QuantityWidth, ItemPiece.QuantityHeight, false);
         UpdateOffset(itemSprite);
         UpdateOffset(itemName);
         UpdateOffset(itemQuantity);
     }
     void Update()
     {
-        
+        UpdatePiece();
+    }
+
+    void UpdatePiece()
+    {
+        UpdateOffset(itemSprite);
+        UpdateOffset(itemName);
+        UpdateOffset(itemQuantity);
+        UpdateSprite();
+        CreateText(ref itemName, ref meshItemName, "Item Name", ItemPiece.NameColor, ItemPiece.PieceItem.Name, TextAlignmentOptions.Top, ItemPiece.NameSize, ItemPiece.NameWidth, ItemPiece.NameHeight, true);
+        CreateText(ref itemQuantity, ref meshItemQuantity, "Item Quantity", ItemPiece.QuantityColor, ItemPiece.Quantity.ToString(), TextAlignmentOptions.Top, ItemPiece.QuantitySize, ItemPiece.QuantityWidth, ItemPiece.QuantityHeight, true);
+    }
+
+    void UpdateSprite()
+    {
+        itemSprite.transform.position = Vector3.zero;
+        itemSprite.transform.Translate(new Vector3(0, ItemPiece.SpriteOffset, 0), Space.Self);
+        itemSpriteRenderer.sprite = ItemPiece.PieceItem.Image;
+        //itemSpriteRenderer.sprite = Sprite.Create(itemSpriteRenderer.sprite.texture, itemSpriteRenderer.sprite.rect, new Vector2(0.5f, 0));
+        itemSprite.transform.localScale = new Vector3(ItemPiece.SpriteWidthScale, ItemPiece.SpriteHeightScale, 0);
     }
 
     void UpdateOffset(GameObject go)
     {
+        go.transform.position = Vector3.zero;
         go.transform.Translate(new Vector3(0, ItemPiece.PieceOffset, 0), Space.Self);
     }
-    GameObject CreateText(string name, Color color, string content, TextAlignmentOptions align, float fontSize, float width, float height)
+
+    void CreateText(ref GameObject text, ref TextMeshPro textMesh, string name, Color color, string content, TextAlignmentOptions align, float fontSize, float width, float height, bool isUpdate)
     {
-        GameObject text = new GameObject();
-        TextMeshPro textMesh = text.AddComponent<TextMeshPro>();
-        text.name = name;
-        text.transform.Rotate(new Vector3(0, 0, ItemPiece.PieceAngle / 2));
+        if (!isUpdate)
+        {
+            text = new GameObject();
+            textMesh = text.AddComponent<TextMeshPro>();
+            text.transform.Rotate(new Vector3(0, 0, -ItemPiece.PieceAngle / 2));
+            text.name = name;
+        }
 
         textMesh.color = color;
         textMesh.text = content;
@@ -60,7 +87,6 @@ public class PieceRenderer : MonoBehaviour
 
         textMesh.enableAutoSizing = true;
         text.transform.SetParent(transform, false);
-        return text;
     }
 
     void SetupTexture()
@@ -84,18 +110,18 @@ public class PieceRenderer : MonoBehaviour
         spriteRenderer.sortingOrder = -1;
     }
 
-    GameObject RenderItemSprite()
+    void RenderItemSprite(ref GameObject itemSprite, ref SpriteRenderer spriteRenderer)
     {
-        GameObject itemSprite = new GameObject();
+        itemSprite = new GameObject();
         itemSprite.name = "Item Sprite";
-        SpriteRenderer spriteRenderer = itemSprite.AddComponent<SpriteRenderer>();
+        spriteRenderer = itemSprite.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = ItemPiece.PieceItem.Image;
-        spriteRenderer.sprite = Sprite.Create(spriteRenderer.sprite.texture, spriteRenderer.sprite.rect, new Vector2(0.5f, 0));
+        //spriteRenderer.sprite = Sprite.Create(spriteRenderer.sprite.texture, spriteRenderer.sprite.rect, new Vector2(0.5f, 0));
         itemSprite.transform.localScale = new Vector3(ItemPiece.SpriteWidthScale, ItemPiece.SpriteHeightScale, 0);
-        itemSprite.transform.Rotate(new Vector3(0, 0, ItemPiece.PieceAngle / 2));
+        itemSprite.transform.rotation = Quaternion.Euler(new Vector3(0, 0, -ItemPiece.PieceAngle / 2));
         itemSprite.transform.Translate(new Vector3(0, ItemPiece.SpriteOffset, 0), Space.Self);
+
         itemSprite.transform.SetParent(transform, false);
-        return itemSprite;
     }
 
     void RenderCircle()
